@@ -350,6 +350,53 @@ Matrix* norm(Matrix *matrix) {
     return normalized_similarity_matrix;
 }
 
+
+Matrix* update(Matrix* H, Matrix* W) {
+    int n = W->rows;
+    int k = H->cols;
+    Matrix* WH = multiply_matrices(W, H);
+    Matrix* Ht = transpose(H);
+    Matrix* HHt = multiply_matrices(H, Ht);
+    Matrix* HHtH = multiply_matrices(HHt, H);
+    Matrix* next_h = initialize_matrix_with_zeros(n, k);
+    double b = 0.5;
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < k; j++) {
+            next_h->data[i][j] = H->data[i][j] * (b + b * (WH->data[i][j] / HHtH->data[i][j]));
+        }
+    }
+
+    free_matrix(WH);
+    free_matrix(Ht);
+    free_matrix(HHt);
+    free_matrix(HHtH);
+    return next_h;
+}   
+
+Matrix* symnmf(Matrix *H, Matrix *W) {
+    int iter = 0;
+    double eps = 0.0001;
+    Matrix* next_H;
+    int n = H->rows;
+    int k = H->cols;
+
+    while (iter < 300) {
+        next_H = update(H, W);
+        if (pow(frobidean_distance(H, next_H), 2) < eps) {
+            return next_H;
+        }
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < k; j++) {
+                H->data[i][j] = next_H->data[i][j];
+            }
+        }
+        free_matrix(next_H);
+        iter++;
+    }
+    return next_H;
+}
+
 // Function to print a matrix with specific formatting
 void print_matrix(Matrix *matrix) {
     for (int i = 0; i < matrix->rows; i++) {
@@ -361,6 +408,43 @@ void print_matrix(Matrix *matrix) {
         }
         printf("\n"); // Newline at the end of each row
     }
+}
+
+double frobidean_distance(Matrix* mat1, Matrix* mat2) {
+    double d = 0.0;
+    int i, j;
+    int rows = mat1->rows;
+    int cols = mat1->cols;
+
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < cols; j++) {
+            d += (mat1->data[i][j] - mat2->data[i][j]) * (mat1->data[i][j] - mat2->data[i][j]);
+        }
+    }
+    return sqrt(d);
+
+}
+
+Matrix* transpose(Matrix* matrix) {
+    if (matrix == NULL) {
+        return NULL;
+    }
+
+    int rows = matrix->rows;
+    int cols = matrix->cols;
+
+    Matrix* transposed_matrix = initialize_matrix_with_zeros(cols, rows);
+    if (transposed_matrix == NULL) {
+        return NULL;
+    }
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            transposed_matrix->data[j][i] = matrix->data[i][j];
+        }
+    }
+
+    return transposed_matrix;
 }
 
 int main(int argc, char *argv[]) {

@@ -134,11 +134,41 @@ static PyObject* py_norm(PyObject* self, PyObject* args) {
     return result_list;
 }
 
+// Wrapper function for symnmf
+static PyObject* py_symnmf(PyObject* self, PyObject* args) {
+    PyObject* H_list;
+    PyObject* W_list;
+    if (!PyArg_ParseTuple(args, "OO", &H_list, &W_list)) {
+        return NULL;
+    }
+
+    Matrix* H_matrix = python_list_to_matrix(H_list);
+    Matrix* W_matrix = python_list_to_matrix(W_list);
+    if (H_matrix == NULL || W_matrix == NULL) {
+        return NULL;  // Exception already set
+    }
+
+    Matrix* result_matrix = symnmf(H_matrix, W_matrix);
+    free_matrix(H_matrix);
+    free_matrix(W_matrix);
+
+    if (result_matrix == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to compute the symnmf matrix.");
+        return NULL;
+    }
+
+    PyObject* result_list = matrix_to_python_list(result_matrix);
+    free_matrix(result_matrix);
+
+    return result_list;
+}
+
 // Method definitions
 static PyMethodDef SymnmfMethods[] = {
     {"sym", py_sym, METH_VARARGS, "Calculate the symmetric normalized similarity matrix."},
     {"ddg", py_ddg, METH_VARARGS, "Calculate the diagonal degree matrix."},
     {"norm", py_norm, METH_VARARGS, "Calculate the normalized similarity matrix."},
+    {"symnmf", py_symnmf, METH_VARARGS, "Calculate the symnmf matrix."},
     {NULL, NULL, 0, NULL}
 };
 
