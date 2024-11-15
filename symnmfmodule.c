@@ -91,7 +91,7 @@ static PyObject* py_ddg(PyObject* self, PyObject* args) {
 
     Matrix* input_matrix = python_list_to_matrix(input_list);
     if (input_matrix == NULL) {
-        return NULL;  /* Exception already set */
+        return NULL; 
     }
 
     Matrix* result_matrix = ddg(input_matrix);
