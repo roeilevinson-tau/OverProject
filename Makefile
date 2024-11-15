@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -ansi -Wall -Wextra -Werror -pedantic-errors -std=c99
+CFLAGS = -ansi -Wall -Wextra -Werror -pedantic-errors 
 LIBS = -lm
 
 # Specify the target executable and the source files needed to build it

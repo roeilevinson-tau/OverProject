@@ -4,7 +4,6 @@ typedef struct Matrix {
     double **data;
 } Matrix;
 
-// Function prototypes
 void free_matrix(Matrix *matrix);
 Matrix* initialize_matrix_with_zeros(int rows, int cols);
 Matrix* sym(Matrix *matrix);
