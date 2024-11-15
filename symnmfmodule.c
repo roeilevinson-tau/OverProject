@@ -1,7 +1,7 @@
 #include <Python.h>
 #include "symnmf.h"
 
-// Helper function to convert a Python list to a Matrix struct
+/* Helper function to convert a Python list to a Matrix struct */
 Matrix* python_list_to_matrix(PyObject* list) {
     if (!PyList_Check(list)) {
         PyErr_SetString(PyExc_TypeError, "Input must be a list of lists.");
@@ -43,7 +43,7 @@ Matrix* python_list_to_matrix(PyObject* list) {
     return matrix;
 }
 
-// Helper function to convert a Matrix struct to a Python list
+/* Helper function to convert a Matrix struct to a Python list */
 PyObject* matrix_to_python_list(Matrix* matrix) {
     PyObject* list = PyList_New(matrix->rows);
     for (int i = 0; i < matrix->rows; i++) {
@@ -56,7 +56,7 @@ PyObject* matrix_to_python_list(Matrix* matrix) {
     return list;
 }
 
-// Wrapper function for sym
+/* Wrapper function for sym */
 static PyObject* py_sym(PyObject* self, PyObject* args) {
     PyObject* input_list;
     if (!PyArg_ParseTuple(args, "O", &input_list)) {
@@ -65,7 +65,7 @@ static PyObject* py_sym(PyObject* self, PyObject* args) {
 
     Matrix* input_matrix = python_list_to_matrix(input_list);
     if (input_matrix == NULL) {
-        return NULL;  // Exception already set
+        return NULL;  /* Exception already set */
     }
 
     Matrix* result_matrix = sym(input_matrix);
@@ -82,7 +82,7 @@ static PyObject* py_sym(PyObject* self, PyObject* args) {
     return result_list;
 }
 
-// Wrapper function for ddg
+/* Wrapper function for ddg */
 static PyObject* py_ddg(PyObject* self, PyObject* args) {
     PyObject* input_list;
     if (!PyArg_ParseTuple(args, "O", &input_list)) {
@@ -91,7 +91,7 @@ static PyObject* py_ddg(PyObject* self, PyObject* args) {
 
     Matrix* input_matrix = python_list_to_matrix(input_list);
     if (input_matrix == NULL) {
-        return NULL;  // Exception already set
+        return NULL;  /* Exception already set */
     }
 
     Matrix* result_matrix = ddg(input_matrix);
@@ -108,7 +108,7 @@ static PyObject* py_ddg(PyObject* self, PyObject* args) {
     return result_list;
 }
 
-// Wrapper function for norm
+/* Wrapper function for norm */
 static PyObject* py_norm(PyObject* self, PyObject* args) {
     PyObject* input_list;
     if (!PyArg_ParseTuple(args, "O", &input_list)) {
@@ -117,7 +117,7 @@ static PyObject* py_norm(PyObject* self, PyObject* args) {
 
     Matrix* input_matrix = python_list_to_matrix(input_list);
     if (input_matrix == NULL) {
-        return NULL;  // Exception already set
+        return NULL;  /* Exception already set */
     }
 
     Matrix* result_matrix = norm(input_matrix);
@@ -134,7 +134,7 @@ static PyObject* py_norm(PyObject* self, PyObject* args) {
     return result_list;
 }
 
-// Wrapper function for symnmf
+/* Wrapper function for symnmf */
 static PyObject* py_symnmf(PyObject* self, PyObject* args) {
     PyObject* H_list;
     PyObject* W_list;
@@ -145,7 +145,7 @@ static PyObject* py_symnmf(PyObject* self, PyObject* args) {
     Matrix* H_matrix = python_list_to_matrix(H_list);
     Matrix* W_matrix = python_list_to_matrix(W_list);
     if (H_matrix == NULL || W_matrix == NULL) {
-        return NULL;  // Exception already set
+        return NULL;  /* Exception already set */
     }
 
     Matrix* result_matrix = symnmf(H_matrix, W_matrix);
@@ -163,7 +163,7 @@ static PyObject* py_symnmf(PyObject* self, PyObject* args) {
     return result_list;
 }
 
-// Method definitions
+/* Method definitions */
 static PyMethodDef SymnmfMethods[] = {
     {"sym", py_sym, METH_VARARGS, "Calculate the symmetric normalized similarity matrix."},
     {"ddg", py_ddg, METH_VARARGS, "Calculate the diagonal degree matrix."},
@@ -172,7 +172,7 @@ static PyMethodDef SymnmfMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-// Module definition
+/* Module definition */
 static struct PyModuleDef symnmfmodule = {
     PyModuleDef_HEAD_INIT,
     "mysymnmf",
@@ -181,7 +181,7 @@ static struct PyModuleDef symnmfmodule = {
     SymnmfMethods
 };
 
-// Module initialization function
+/* Module initialization function */
 PyMODINIT_FUNC PyInit_mysymnmf(void) {
     return PyModule_Create(&symnmfmodule);
 }

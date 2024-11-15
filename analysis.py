@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import silhouette_score
 from symnmf import symnmf_matrix
-from kmeans import kmeans  # Import the kmeans function
+from kmeans import kmeans 
 
 def read_data(file_path):
     """Reads data points from a file."""
@@ -13,7 +13,6 @@ def read_data(file_path):
 def symnmf_clustering(k, matrix):
     """Performs clustering using SymNMF."""
     H_final = symnmf_matrix(k, matrix)
-    
     cluster_assignments = np.argmax(H_final, axis=1)
     return cluster_assignments
 
