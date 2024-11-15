@@ -3,22 +3,22 @@ import sys
 import pandas as pd
 import numpy as np
 import random
-import symnmf as sf
+import mysymnmf as sf
 
 np.random.seed(1234)
 
 
-def sym(matrix):
+def sym_matrix(matrix):
     return sf.sym(matrix)
 
-def ddg(matrix):
+def ddg_matrix(matrix):
     return sf.ddg(matrix)
 
-def norm(matrix):
+def norm_matrix(matrix):
     return sf.norm(matrix)
 
-def symnmf(k, matrix):
-    W = norm(matrix)
+def symnmf_matrix(k, matrix):
+    W = norm_matrix(matrix)
     m = np.mean(W)
     H = np.random.uniform(0, 2 * math.sqrt(m / k), size=(len(matrix), k))
     H_list = H.tolist()
@@ -26,43 +26,35 @@ def symnmf(k, matrix):
     return result
 
 def main():
-    if (len(sys.argv) < 3 or len(sys.argv) > 4):
-        print("An Error Has Occurred")
-        sys.exit(1)
+    try:
+        if (len(sys.argv) < 3 or len(sys.argv) > 4):
+            raise ValueError("Invalid number of arguments")
 
-    k = int(sys.argv[1])
-    goal = sys.argv[2]
-    file_name = sys.argv[3]
-    
-    try: 
+        k = int(sys.argv[1])
+        goal = sys.argv[2]
+        file_name = sys.argv[3]
+        
         data = pd.read_csv(file_name, header=None)
-    except Exception as e:
-        print("An Error Has Occurred")
-        sys.exit(1)
+        matrix = [x.tolist() for index, x in data.iterrows()]
+        if k >= len(matrix) or len(matrix) == 0:
+            raise ValueError("Invalid value of k or empty matrix")
 
-    matrix = [x.tolist() for index, x in data.iterrows()]
-    if k >= len(matrix) or len(matrix) == 0:
-        print("An Error Has Occurred")
-        sys.exit(1)
-
-    try: 
         if goal == "sym":
-            res = sym(matrix)
+            res = sym_matrix(matrix)
         elif goal == "ddg":
-            res = ddg(matrix)
+            res = ddg_matrix(matrix)
         elif goal == "norm":
-            res = norm(matrix)
+            res = norm_matrix(matrix)
         elif goal == "symnmf":
-            res = symnmf(k, matrix)
+            res = symnmf_matrix(k, matrix)
         else:
-            print("An Error Has Occurred")
-            sys.exit(1)
-    except Exception as e:
-        print("An Error Has Occurred", str(e))
-        sys.exit(1)
+            raise ValueError("Invalid goal")
 
-    for row in res:
-        print(",".join(str("{:.4f}".format(round(x, 4))) for x in row))
+        for row in res:
+            print(",".join(str("{:.4f}".format(round(x, 4))) for x in row))
+    except Exception as e:
+        print("An Error Has Occurred")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

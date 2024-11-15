@@ -27,10 +27,12 @@ int allocate_2D_array(double ***array, int rows, int cols) {
 
 // Function to free a 2D array
 void free_2D_array(double ***array, int rows) {
+    if (*array == NULL) return; // Check if array is already freed
     for (int i = 0; i < rows; i++) {
         free((*array)[i]);
     }
     free(*array);
+    *array = NULL; // Set pointer to NULL after freeing
 }
 
 // Function to get the number of rows and columns in the file
@@ -208,16 +210,17 @@ Matrix* ddg(Matrix *matrix) {
     // Initialize a new matrix for the diagonal
     Matrix *diagonal_matrix = initialize_matrix_with_zeros(n, n);
     if (diagonal_matrix == NULL) {
+        free_matrix(sym_matrix); // Free sym_matrix before returning
         return NULL;
     }
 
-    int i, j; // Variable declarations at the beginning of the function
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < n; j++) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
             diagonal_matrix->data[i][i] += sym_matrix->data[i][j];
         }
     }
 
+    free_matrix(sym_matrix); // Free sym_matrix after use
     return diagonal_matrix;
 }
 Matrix* multiply_matrices(Matrix *matrix1, Matrix *matrix2) {
@@ -283,7 +286,6 @@ Matrix* norm(Matrix *matrix) {
     }
 
     int rows = matrix->rows;
-   
     Matrix *normalized_similarity_matrix = initialize_matrix_with_zeros(rows, rows);
     if (normalized_similarity_matrix == NULL) {
         return NULL;
@@ -296,7 +298,7 @@ Matrix* norm(Matrix *matrix) {
         return NULL;
     }
 
-    // Create the diagonal degree matrix using the dgg function
+    // Create the diagonal degree matrix using the ddg function
     Matrix *ddg_matrix = ddg(matrix);
     if (ddg_matrix == NULL) {
         free_matrix(normalized_similarity_matrix);
@@ -304,7 +306,7 @@ Matrix* norm(Matrix *matrix) {
         return NULL;
     }
 
-    // Create the inverse square root of the diagonal degree matrix
+    // Compute the inverse square root of the diagonal degree matrix
     Matrix *inv_sqrt_ddg_matrix = compute_inverse_sqrt(ddg_matrix);
     if (inv_sqrt_ddg_matrix == NULL) {
         free_matrix(normalized_similarity_matrix);
@@ -313,7 +315,7 @@ Matrix* norm(Matrix *matrix) {
         return NULL;
     }
 
-    // First, compute inv_sqrt_ddg_matrix * sym_matrix
+    // Multiply matrices to get the normalized similarity matrix
     Matrix *temp_matrix = multiply_matrices(inv_sqrt_ddg_matrix, sym_matrix);
     if (temp_matrix == NULL) {
         free_matrix(normalized_similarity_matrix);
@@ -323,7 +325,6 @@ Matrix* norm(Matrix *matrix) {
         return NULL;
     }
 
-    // Then, compute (inv_sqrt_ddg_matrix * sym_matrix) * inv_sqrt_ddg_matrix
     Matrix *result_matrix = multiply_matrices(temp_matrix, inv_sqrt_ddg_matrix);
     if (result_matrix == NULL) {
         free_matrix(normalized_similarity_matrix);
@@ -449,7 +450,7 @@ Matrix* transpose(Matrix* matrix) {
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        fprintf(stderr, "Usage: %s <goal> <file_name>\n", argv[0]);
+        fprintf(stderr, "An Error Has Occurred\n");
         return 1;
     }
 
@@ -459,7 +460,7 @@ int main(int argc, char *argv[]) {
     // Load matrix from file
     Matrix *matrix = load_matrix_from_file(file_name);
     if (matrix == NULL) {
-        fprintf(stderr, "Failed to load matrix from file: %s\n", file_name);
+        fprintf(stderr, "An Error Has Occurred\n");
         return 1;
     }
     
@@ -471,7 +472,7 @@ int main(int argc, char *argv[]) {
     } else if (strcmp(goal, "norm") == 0) {
         result = norm(matrix);
     } else {
-        fprintf(stderr, "Invalid goal: %s\n", goal);
+        fprintf(stderr, "An Error Has Occurred\n");
         free_matrix(matrix);
         return 1;
     }
@@ -480,6 +481,7 @@ int main(int argc, char *argv[]) {
         print_matrix(result);
         free_matrix(result);
     }
+    free_matrix(matrix); // Free the original matrix
     return 0;
 }
 

@@ -91,7 +91,7 @@ def has_converged(centroids, new_centroids, epsilon):
             return False
     return True
 
-def kmeans(num_clusters, file_path, max_iterations=200, epsilon=0.001):
+def kmeans(num_clusters, file_path, max_iterations=300, epsilon=0.0001):
     """Performs k-means clustering on the data."""
     data_points = read_data_points(file_path)
     num_dimensions = len(data_points[0])
@@ -106,9 +106,7 @@ def kmeans(num_clusters, file_path, max_iterations=200, epsilon=0.001):
 
         centroids = new_centroids
 
-    output_results(centroids)
-
-
+    return assignments
 
 def main():
     """Main function to run the k-means clustering algorithm."""
@@ -117,6 +115,7 @@ def main():
         kmeans(num_clusters, file_path, max_iterations)
     except Exception as e:
         print("An Error Has Occurred")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
