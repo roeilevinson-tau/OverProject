@@ -6,109 +6,52 @@
 
 #define DELIMITER ','
 
-// Function to allocate a 2D array
-int allocate_2D_array(double ***array, int rows, int cols) {
-    *array = (double **)malloc(rows * sizeof(double *));
-    if (*array == NULL) {
-        return 1;
-    }
-    for (int i = 0; i < rows; i++) {
-        (*array)[i] = (double *)malloc(cols * sizeof(double));
-        if ((*array)[i] == NULL) {
-            for (int j = 0; j < i; j++) {
-                free((*array)[j]);
-            }
-            free(*array);
-            return 1;
-        }
-    }
-    return 0;
-}
 
-// Function to free a 2D array
-void free_2D_array(double ***array, int rows) {
-    if (*array == NULL) return; // Check if array is already freed
-    for (int i = 0; i < rows; i++) {
-        free((*array)[i]);
-    }
-    free(*array);
-    *array = NULL; // Set pointer to NULL after freeing
-}
 
-// Function to get the number of rows and columns in the file
-int get_file_rows_cols(const char *file_name, int *rows, int *cols) {
-    FILE *file;
-    int c;
-    double fake_num;
-    file = fopen(file_name, "r");
-    if (file == NULL)
-        return 1;
-
-    *rows = 0;
-    *cols = 0;
-    while (fscanf(file, "%lf", &fake_num) != EOF) {
-        c = fgetc(file);
-
-        if (*rows == 0)
-            (*cols)++;
-
-        if (c == '\n' || c == EOF)
-            (*rows)++;
-    }
-    fclose(file);
-    return 0;
-}
-
-// Function to read the file and populate the matrix
-int read_file(double ***X, const char *file_name, int *rows, int *cols) {
-    FILE *file;
-    int c, row, col;
-    if (get_file_rows_cols(file_name, rows, cols) != 0)
-        return 1;
-
-    if (allocate_2D_array(X, *rows, *cols) != 0)
-        return 1;
-
-    file = fopen(file_name, "r");
-    if (file == NULL)
-        return 1;
-
-    row = 0;
-    col = 0;
-    while (fscanf(file, "%lf", &((*X)[row][col++])) != EOF) {
-        c = fgetc(file);
-        if (c == '\n') {
-            row++;
-            col = 0;
-        } else if (c != DELIMITER && c != EOF) {
-            free_2D_array(X, *rows);
-            fclose(file);
-            return 1;
-        }
-    }
-    fclose(file);
-
-    return 0;
-}
 
 // Function to load a matrix from a file
 Matrix* load_matrix_from_file(const char *file_name) {
-    int rows, cols;
+    int n = 0;
+    int d = 0;
+    int ch;
+    int i, j; 
     double **data;
 
-    if (read_file(&data, file_name, &rows, &cols) != 0) {
-        fprintf(stderr, "Failed to read matrix from file: %s\n", file_name);
+
+    FILE *file = fopen(file_name, "r");
+    if (file == NULL) {
         return NULL;
     }
+
+    while ((ch = fgetc(file)) != EOF) {
+        if (ch == '\n') {
+            n++;
+        } else if ((ch == ',') && (n == 0)) {
+            d++;
+        }
+    }
+    d++;
+
+    rewind(file);
+
+    data = (double **)malloc(n * sizeof(double *));
+    for (i = 0; i < n; i++) {
+        data[i] = (double *)malloc(d * sizeof(double));
+        for (j = 0; j < d; j++) {
+            if (fscanf(file, "%lf,", &data[i][j]) != 1) {
+                return NULL;
+            }
+        }
+    }
+    fclose(file);
 
     Matrix *matrix = (Matrix *)malloc(sizeof(Matrix));
     if (matrix == NULL) {
-        free_2D_array(&data, rows);
         return NULL;
     }
 
-    matrix->rows = rows;
-    matrix->cols = cols;
+    matrix->rows = n;
+    matrix->cols = d;
     matrix->data = data;
 
     return matrix;
@@ -229,7 +172,6 @@ Matrix* multiply_matrices(Matrix *matrix1, Matrix *matrix2) {
     }
 
     if (matrix1->cols != matrix2->rows) {
-        fprintf(stderr, "Matrix dimensions do not match for multiplication.\n");
         return NULL;
     }
 
@@ -463,6 +405,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "An Error Has Occurred\n");
         return 1;
     }
+    
     
     Matrix *result = NULL;
     if (strcmp(goal, "sym") == 0) {

@@ -320,7 +320,7 @@ for test_case in "${test_cases[@]}"; do
     fi
 
     # Clean up input file
-    # rm -f $file_name
+    rm -f $file_name
 done
 
 echo -e "${BLUE}Testing error handling for non-existing files...${NC}"
