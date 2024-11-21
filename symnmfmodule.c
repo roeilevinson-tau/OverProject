@@ -65,7 +65,7 @@ static PyObject* py_sym(PyObject* self, PyObject* args) {
 
     Matrix* input_matrix = python_list_to_matrix(input_list);
     if (input_matrix == NULL) {
-        return NULL;  /* Exception already set */
+        return NULL;  
     }
 
     Matrix* result_matrix = sym(input_matrix);
@@ -117,7 +117,7 @@ static PyObject* py_norm(PyObject* self, PyObject* args) {
 
     Matrix* input_matrix = python_list_to_matrix(input_list);
     if (input_matrix == NULL) {
-        return NULL;  /* Exception already set */
+        return NULL; 
     }
 
     Matrix* result_matrix = norm(input_matrix);
@@ -145,7 +145,7 @@ static PyObject* py_symnmf(PyObject* self, PyObject* args) {
     Matrix* H_matrix = python_list_to_matrix(H_list);
     Matrix* W_matrix = python_list_to_matrix(W_list);
     if (H_matrix == NULL || W_matrix == NULL) {
-        return NULL;  /* Exception already set */
+        return NULL;  
     }
 
     Matrix* result_matrix = symnmf(H_matrix, W_matrix);

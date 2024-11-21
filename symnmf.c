@@ -6,40 +6,96 @@
 
 #define DELIMITER ','
 
+/* Helper function to allocate memory for the matrix data */
+double** allocate_matrix_data(int n, int d) {
+    double **data;
+    int i, j;
+    data = (double **)malloc(n * sizeof(double *));
+    if (data == NULL) {
+        return NULL;
+    }
+    for (i = 0; i < n; i++) {
+        data[i] = (double *)malloc(d * sizeof(double));
+        if (data[i] == NULL) {
+            for (j = 0; j < i; j++) {
+                free(data[j]);
+            }
+            free(data);
+            return NULL;
+        }
+    }
+    return data;
+}
+
+/* Helper function to read matrix data from file */
+int read_matrix_data(FILE *file, double **data, int n, int d) {
+    int i, j;
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < d; j++) {
+            if (fscanf(file, "%lf,", &data[i][j]) != 1) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+/* Helper function to count rows and columns in the file */
+void count_rows_and_columns(FILE *file, int *n, int *d) {
+    int ch;
+    *n = 0;
+    *d = 0;
+    while ((ch = fgetc(file)) != EOF) {
+        if (ch == '\n') {
+            (*n)++;
+        } else if ((ch == ',') && (*n == 0)) {
+            (*d)++;
+        }
+    }
+    (*d)++;
+    rewind(file);
+}
+
+/* Function to handle cleanup of matrix data */
+void cleanup_matrix_data(double **data, int n) {
+    int i;
+    for (i = 0; i < n; i++) {
+        free(data[i]);
+    }
+    free(data);
+}
+
+/* Function to handle file reading errors */
+Matrix* handle_file_read_error(FILE *file, double **data, int n) {
+    fclose(file);
+    cleanup_matrix_data(data, n);
+    return NULL;
+}
+
 /* Function to load a matrix from a file */
 Matrix* load_matrix_from_file(const char *file_name) {
-    int n = 0;
-    int d = 0;
-    int ch;
-    int i, j;
-    double **data;
-    FILE *file;
-    Matrix *matrix;
+    int n = 0, d = 0;
+    double **data = NULL;
+    FILE *file = NULL;
+    Matrix *matrix = NULL;
+    
     file = fopen(file_name, "r");
     if (file == NULL) {
         return NULL;
     }
-    while ((ch = fgetc(file)) != EOF) {
-        if (ch == '\n') {
-            n++;
-        } else if ((ch == ',') && (n == 0)) {
-            d++;
-        }
+    count_rows_and_columns(file, &n, &d);
+    data = allocate_matrix_data(n, d);
+    if (data == NULL) {
+        fclose(file);
+        return NULL;
     }
-    d++;
-    rewind(file);
-    data = (double **)malloc(n * sizeof(double *));
-    for (i = 0; i < n; i++) {
-        data[i] = (double *)malloc(d * sizeof(double));
-        for (j = 0; j < d; j++) {
-            if (fscanf(file, "%lf,", &data[i][j]) != 1) {
-                return NULL;
-            }
-        }
+    if (!read_matrix_data(file, data, n, d)) {
+        return handle_file_read_error(file, data, n);
     }
     fclose(file);
     matrix = (Matrix *)malloc(sizeof(Matrix));
     if (matrix == NULL) {
+        cleanup_matrix_data(data, n);
         return NULL;
     }
     matrix->rows = n;
@@ -135,16 +191,14 @@ Matrix* ddg(Matrix *matrix) {
     if (matrix == NULL) {
         return NULL;
     }
-    /* First, get the sym matrix */
     sym_matrix = sym(matrix);
     if (sym_matrix == NULL) {
         return NULL;
     }
     n = matrix->rows < matrix->cols ? matrix->cols : matrix->rows;
-    /* Initialize a new matrix for the diagonal */
     diagonal_matrix = initialize_matrix_with_zeros(n, n);
     if (diagonal_matrix == NULL) {
-        free_matrix(sym_matrix); /* Free sym_matrix before returning */
+        free_matrix(sym_matrix); 
         return NULL;
     }
     for (i = 0; i < n; i++) {
@@ -152,7 +206,7 @@ Matrix* ddg(Matrix *matrix) {
             diagonal_matrix->data[i][i] += sym_matrix->data[i][j];
         }
     }
-    free_matrix(sym_matrix); /* Free sym_matrix after use */
+    free_matrix(sym_matrix); 
     return diagonal_matrix;
 }
 
@@ -208,30 +262,41 @@ Matrix* compute_inverse_sqrt(Matrix *matrix) {
     return result_matrix;
 }
 
+/* Function to compute the normalized matrix */
+Matrix* compute_normalized_matrix(Matrix *matrix) {
+    Matrix *sym_matrix = sym(matrix);
+    Matrix *ddg_matrix = ddg(matrix);
+    Matrix *inv_sqrt_matrix = compute_inverse_sqrt(ddg_matrix);
+    Matrix *temp_matrix = multiply_matrices(inv_sqrt_matrix, sym_matrix);
+    Matrix *result_matrix = multiply_matrices(temp_matrix, inv_sqrt_matrix);
+    free_matrix(sym_matrix);
+    free_matrix(ddg_matrix);
+    free_matrix(inv_sqrt_matrix);
+    free_matrix(temp_matrix);
+    return result_matrix;
+}
+
 /* Function to normalize a matrix */
 Matrix* norm(Matrix *matrix) {
     int rows, i, j;
-    Matrix *matrices[5]; /* Array to hold matrices: 0-normalized, 1-sym, 2-ddg, 3-inv_sqrt_ddg, 4-temp */
     Matrix *result_matrix;
+    Matrix *normalized_matrix;
     if (matrix == NULL) return NULL;
     rows = matrix->rows;
-    matrices[0] = initialize_matrix_with_zeros(rows, rows);
-    if (matrices[0] == NULL) return NULL;
-    matrices[1] = sym(matrix);
-    matrices[2] = ddg(matrix);
-    matrices[3] = compute_inverse_sqrt(matrices[2]);
-    matrices[4] = multiply_matrices(matrices[3], matrices[1]);
-    result_matrix = multiply_matrices(matrices[4], matrices[3]);
-    if (!matrices[1] || !matrices[2] || !matrices[3] || !matrices[4] || !result_matrix) {
-        for (i = 0; i < 5; i++) free_matrix(matrices[i]);
+    result_matrix = compute_normalized_matrix(matrix);
+    if (result_matrix == NULL) return NULL;
+    normalized_matrix = initialize_matrix_with_zeros(rows, rows);
+    if (normalized_matrix == NULL) {
+        free_matrix(result_matrix);
         return NULL;
     }
-    for (i = 0; i < rows; i++)
-        for (j = 0; j < rows; j++)
-            matrices[0]->data[i][j] = result_matrix->data[i][j];
-    for (i = 1; i < 5; i++) free_matrix(matrices[i]);
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < rows; j++) {
+            normalized_matrix->data[i][j] = result_matrix->data[i][j];
+        }
+    }
     free_matrix(result_matrix);
-    return matrices[0];
+    return normalized_matrix;
 }
 
 /* Function to update matrix H in the SYM-NMF algorithm */
@@ -291,10 +356,10 @@ void print_matrix(Matrix *matrix) {
         for (j = 0; j < matrix->cols; j++) {
             printf("%.4f", matrix->data[i][j]);
             if (j < matrix->cols - 1) {
-                printf(","); /* Add a comma between elements */
+                printf(","); 
             }
         }
-        printf("\n"); /* Newline at the end of each row */
+        printf("\n"); 
     }
 }
 
@@ -364,6 +429,6 @@ int main(int argc, char *argv[]) {
         print_matrix(result);
         free_matrix(result);
     }
-    free_matrix(matrix); /* Free the original matrix */
+    free_matrix(matrix); 
     return 0;
 }
