@@ -263,40 +263,19 @@ Matrix* compute_inverse_sqrt(Matrix *matrix) {
 }
 
 /* Function to compute the normalized matrix */
-Matrix* compute_normalized_matrix(Matrix *matrix) {
-    Matrix *sym_matrix = sym(matrix);
-    Matrix *ddg_matrix = ddg(matrix);
-    Matrix *inv_sqrt_matrix = compute_inverse_sqrt(ddg_matrix);
-    Matrix *temp_matrix = multiply_matrices(inv_sqrt_matrix, sym_matrix);
-    Matrix *result_matrix = multiply_matrices(temp_matrix, inv_sqrt_matrix);
+Matrix* norm(Matrix *matrix) {
+    Matrix *sym_matrix, *ddg_matrix, *inv_sqrt_matrix, *temp_matrix, *result_matrix;
+    if (matrix == NULL) return NULL;
+    sym_matrix = sym(matrix);
+    ddg_matrix = ddg(matrix);
+    inv_sqrt_matrix = compute_inverse_sqrt(ddg_matrix);
+    temp_matrix = multiply_matrices(inv_sqrt_matrix, sym_matrix);
+    result_matrix = multiply_matrices(temp_matrix, inv_sqrt_matrix);
     free_matrix(sym_matrix);
     free_matrix(ddg_matrix);
     free_matrix(inv_sqrt_matrix);
     free_matrix(temp_matrix);
     return result_matrix;
-}
-
-/* Function to normalize a matrix */
-Matrix* norm(Matrix *matrix) {
-    int rows, i, j;
-    Matrix *result_matrix;
-    Matrix *normalized_matrix;
-    if (matrix == NULL) return NULL;
-    rows = matrix->rows;
-    result_matrix = compute_normalized_matrix(matrix);
-    if (result_matrix == NULL) return NULL;
-    normalized_matrix = initialize_matrix_with_zeros(rows, rows);
-    if (normalized_matrix == NULL) {
-        free_matrix(result_matrix);
-        return NULL;
-    }
-    for (i = 0; i < rows; i++) {
-        for (j = 0; j < rows; j++) {
-            normalized_matrix->data[i][j] = result_matrix->data[i][j];
-        }
-    }
-    free_matrix(result_matrix);
-    return normalized_matrix;
 }
 
 /* Function to update matrix H in the SYM-NMF algorithm */
