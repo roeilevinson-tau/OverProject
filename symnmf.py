@@ -8,17 +8,17 @@ import mysymnmf as sf
 np.random.seed(1234)
 
 
-def sym_matrix(matrix):
+def sym(matrix):
     return sf.sym(matrix)
 
-def ddg_matrix(matrix):
+def ddg(matrix):
     return sf.ddg(matrix)
 
-def norm_matrix(matrix):
+def norm(matrix):
     return sf.norm(matrix)
 
-def symnmf_matrix(k, matrix):
-    W = norm_matrix(matrix)
+def symnmf(k, matrix):
+    W = norm(matrix)
     m = np.mean(W)
     H = np.random.uniform(0, 2 * math.sqrt(m / k), size=(len(matrix), k))
     H_list = H.tolist()
@@ -40,13 +40,13 @@ def main():
             raise ValueError("Invalid value of k or empty matrix")
 
         if goal == "sym":
-            res = sym_matrix(matrix)
+            res = sym(matrix)
         elif goal == "ddg":
-            res = ddg_matrix(matrix)
+            res = ddg(matrix)
         elif goal == "norm":
-            res = norm_matrix(matrix)
+            res = norm(matrix)
         elif goal == "symnmf":
-            res = symnmf_matrix(k, matrix)
+            res = symnmf(k, matrix)
         else:
             raise ValueError("Invalid goal")
 
