@@ -31,7 +31,7 @@ def main():
         kmeans_score = silhouette_score(matrix, kmeans_labels)
         print(f"kmeans: {kmeans_score:.4f}")
     except Exception as e:
-        print("An Error Has Occurred")
+        #print("An Error Has Occurred")
         sys.exit(1)
 
 if __name__ == "__main__":
