@@ -195,7 +195,7 @@ Matrix* ddg(Matrix *matrix) {
     if (sym_matrix == NULL) {
         return NULL;
     }
-    n = matrix->rows < matrix->cols ? matrix->cols : matrix->rows;
+    n = matrix->rows;
     diagonal_matrix = initialize_matrix_with_zeros(n, n);
     if (diagonal_matrix == NULL) {
         free_matrix(sym_matrix); 
