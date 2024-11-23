@@ -32,15 +32,22 @@ def symnmf(k, matrix):
 def main():
     """Main function to execute the script."""
     try:
-        if (len(sys.argv) < 3 or len(sys.argv) > 4):
+        if len(sys.argv) < 3 or len(sys.argv) > 4:
             raise ValueError("Invalid number of arguments")
-        k = int(sys.argv[1])
-        goal = sys.argv[2]
-        file_name = sys.argv[3]
+        if len(sys.argv) == 3:
+            goal = sys.argv[1]
+            file_name = sys.argv[2]
+            k = None
+        elif len(sys.argv) == 4:
+            k = int(sys.argv[1])
+            goal = sys.argv[2]
+            file_name = sys.argv[3]
+        else:
+            raise ValueError("Invalid number of arguments")
         data = pd.read_csv(file_name, header=None)
         matrix = [x.tolist() for index, x in data.iterrows()]
-        if k >= len(matrix) or len(matrix) == 0:
-            raise ValueError("Invalid value of k or empty matrix")
+        if len(matrix) == 0:
+            raise ValueError("Empty matrix")
         if goal == "sym":
             res = sym(matrix)
         elif goal == "ddg":
@@ -48,6 +55,8 @@ def main():
         elif goal == "norm":
             res = norm(matrix)
         elif goal == "symnmf":
+            if k >= len(matrix):
+                raise ValueError("Invalid value of k")
             res = symnmf(k, matrix)
         else:
             raise ValueError("Invalid goal")
