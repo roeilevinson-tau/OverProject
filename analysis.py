@@ -20,7 +20,6 @@ def main():
     try:
         if len(sys.argv) != 3:
             raise ValueError("Invalid number of arguments")
-
         k = int(sys.argv[1])
         file_name = sys.argv[2]
         matrix = read_data(file_name)
@@ -31,7 +30,7 @@ def main():
         kmeans_score = silhouette_score(matrix, kmeans_labels)
         print(f"kmeans: {kmeans_score:.4f}")
     except Exception as e:
-        #print("An Error Has Occurred")
+        print("An Error Has Occurred")
         sys.exit(1)
 
 if __name__ == "__main__":

@@ -9,15 +9,19 @@ np.random.seed(1234)
 
 
 def sym(matrix):
+    """Compute the symmetric matrix."""
     return sf.sym(matrix)
 
 def ddg(matrix):
+    """Compute the degree diagonal matrix."""
     return sf.ddg(matrix)
 
 def norm(matrix):
+    """Normalize the input matrix."""
     return sf.norm(matrix)
 
 def symnmf(k, matrix):
+    """Perform symmetric non-negative matrix factorization."""
     W = norm(matrix)
     m = np.mean(W)
     H = np.random.uniform(0, 2 * math.sqrt(m / k), size=(len(matrix), k))
@@ -26,19 +30,17 @@ def symnmf(k, matrix):
     return result
 
 def main():
+    """Main function to execute the script."""
     try:
         if (len(sys.argv) < 3 or len(sys.argv) > 4):
             raise ValueError("Invalid number of arguments")
-
         k = int(sys.argv[1])
         goal = sys.argv[2]
         file_name = sys.argv[3]
-        
         data = pd.read_csv(file_name, header=None)
         matrix = [x.tolist() for index, x in data.iterrows()]
         if k >= len(matrix) or len(matrix) == 0:
             raise ValueError("Invalid value of k or empty matrix")
-
         if goal == "sym":
             res = sym(matrix)
         elif goal == "ddg":
@@ -49,7 +51,6 @@ def main():
             res = symnmf(k, matrix)
         else:
             raise ValueError("Invalid goal")
-
         for row in res:
             print(",".join(str("{:.4f}".format(round(x, 4))) for x in row))
     except Exception as e:
