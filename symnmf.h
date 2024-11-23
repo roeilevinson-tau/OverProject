@@ -45,3 +45,15 @@ double frobidean_distance(Matrix* mat1, Matrix* mat2);
 
 /* Transposes a matrix */
 Matrix* transpose(Matrix* matrix);
+
+/* Cleanup matrix data */
+void cleanup_matrix_data(double **data, int n);
+
+/* Handles file read errors */
+Matrix* handle_file_read_error(FILE *file, double **data, int n);
+
+/* Reads matrix data from file */
+int read_matrix_data(FILE *file, double **data, int n, int d);
+
+/* Counts rows and columns in the file */
+void count_rows_and_columns(FILE *file, int *n, int *d);
